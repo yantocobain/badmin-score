@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/css/admin.css">
+  <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+  <div class="admin-container">
+    <h1>Match Control</h1>
+    
+    <div class="match-info">
+      <div class="match-type"><%= match.match_type === 'single' ? 'Singles' : 'Doubles' %> Match</div>
+      <div class="match-date">Started: <%= new Date(match.date).toLocaleString() %></div>
+    </div>
+    
+    <div class="scoreboard-control">
+      <div class="sides-container">
+        <div class="side-control side-a">
+          <h2>Side A</h2>
+          <% if (match.side_a_logo) { %>
+            <div class="team-logo">
+              <img src="<%= match.side_a_logo %>" alt="Side A Logo" class="logo-image">
+            </div>
+          <% } %>
+          <div class="players">
+            <% sides.A.forEach(player => { %>
+              <div class="player">
+                <div class="player-name"><%= player.name %></div>
+              </div>
+            <% }) %>
+          </div>
+          
+          <div class="score-controls">
+            <button class="score-button decrement" data-side="A">-</button>
+            <div class="current-score" id="sideAScore">0</div>
+            <button class="score-button increment" data-side="A">+</button>
+          </div>
+        </div>
+        
+        <div class="service-control">
+          <div class="service-indicator">
+            <div class="shuttle" id="serviceIndicator"></div>
+          </div>
+          <div id="serviceInfo" class="service-info">Servis Side A dari kanan</div>
+          <button class="switch-service">Ganti Servis Manual</button>
+        </div>
+        
+        <div class="side-control side-b">
+          <h2>Side B</h2>
+          <% if (match.side_b_logo) { %>
+            <div class="team-logo">
+              <img src="<%= match.side_b_logo %>" alt="Side B Logo" class="logo-image">
+            </div>
+          <% } %>
+          <div class="players">
+            <% sides.B.forEach(player => { %>
+              <div class="player">
+                <div class="player-name"><%= player.name %></div>
+              </div>
+            <% }) %>
+          </div>
+          
+          <div class="score-controls">
+            <button class="score-button decrement" data-side="B">-</button>
+            <div class="current-score" id="sideBScore">0</div>
+            <button class="score-button increment" data-side="B">+</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="sets-container">
+        <h3>Sets</h3>
+        <div class="sets">
+          <% scores.forEach((score, index) => { %>
+            <div class="set <%= score.completed ? 'completed' : '' %> <%= index === 0 ? 'active' : '' %>" data-set="<%= score.set_number %>">
+              <div class="set-number">Set <%= score.set_number %></div>
+              <div class="set-scores">
+                <div class="set-score">A: <span id="setA<%= score.set_number %>"><%= score.side_a_score %></span></div>
+                <div class="set-score">B: <span id="setB<%= score.set_number %>"><%= score.side_b_score %></span></div>
+              </div>
+              <% if (!score.completed) { %>
+                <button class="complete-set" data-set="<%= score.set_number %>">Complete Set</button>
+              <% } %>
+            </div>
+          <% }) %>
+        </div>
+      </div>
+      
+      <div class="match-actions">
+        <!-- <div class="admin-actions"> -->
+          <a href="/admin/dashboard" class="button primary">Dashboard</a>
+        <!-- </div> -->
+        <button id="switchSides" class="action-button">Switch Sides</button>
+        <button id="endMatch" class="action-button">End Match</button>
+        <a href="/print/<%= match.id %>" target="_blank" class="action-button print-button">Print Result</a>
+        <a href="/scoreboard?layout=<%= settings.layout %>" target="_blank" class="action-button">Open Scoreboard</a>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    // Initialize socket connection
+    const socket = io();
+    
+    // Match data
+    const matchData = {
+  id: <%= match.id %>,
+  currentSet: 1,
+  sets: <%- JSON.stringify(scores) %>,
+  maxSets: <%= settings.max_sets || 3 %>,
+  pointsToWin: <%= settings.points_to_win || 21 %>,
+  service: 'A', // Side yang sedang service
+  serverPosition: 'right', // Posisi server (right/left)
+  serverPlayer: 1, // Player 1 atau 2 dalam tim (untuk doubles)
+  receiverPlayer: 1, // Player 1 atau 2 dalam tim penerima (untuk doubles)
+  lastWinner: 'A', // Side yang memenangkan rally terakhir
+  matchType: '<%= match.match_type %>', // 'single' atau 'double'
+  sideAScore: 0,
+  sideBScore: 0
+};
+    matchData.sideAScore = matchData.sets[matchData.currentSet - 1].side_a_score;
+    matchData.sideBScore = matchData.sets[matchData.currentSet - 1].side_b_score;
+    document.getElementById('sideAScore').textContent = matchData.sideAScore;
+    document.getElementById('sideBScore').textContent = matchData.sideBScore;
+    // Update score display
+    function updateScoreDisplay() {
+      document.getElementById('sideAScore').textContent = matchData.sideAScore;
+      document.getElementById('sideBScore').textContent = matchData.sideBScore;
+      
+      // Update current set scores
+      document.getElementById(`setA${matchData.currentSet}`).textContent = matchData.sideAScore;
+      document.getElementById(`setB${matchData.currentSet}`).textContent = matchData.sideBScore;
+      
+      // Update service indicator
+      updateServiceIndicator();
+      
+      // Send score update via socket
+      socket.emit('scoreUpdate', {
+        matchId: matchData.id,
+        setNumber: matchData.currentSet,
+        sideAScore: matchData.sideAScore,
+        sideBScore: matchData.sideBScore,
+        service: matchData.service
+      });
+      
+      // Update API
+      fetch(`/api/score/${matchData.id}/${matchData.currentSet}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          sideA: matchData.sideAScore,
+          sideB: matchData.sideBScore
+        })
+      });
+    }
+    
+    function updateService(rallyWinner) {
+  // Update lastWinner
+  matchData.lastWinner = rallyWinner;
+  
+  // Jika pemenang rally berbeda dengan yang sedang servis, servis berpindah
+  if (rallyWinner !== matchData.service) {
+    matchData.service = rallyWinner;
+    
+    // Untuk permainan ganda, reset posisi server saat pergantian servis
+    if (matchData.matchType === 'double') {
+      // Untuk tim yang baru saja mendapat servis, pemain pertama yang melakukan servis
+      // dalam urutan rotasi adalah yang skornya genap
+      const score = rallyWinner === 'A' ? matchData.sideAScore : matchData.sideBScore;
+      matchData.serverPlayer = (score % 2 === 0) ? 1 : 2;
+    }
+  } else if (matchData.matchType === 'double') {
+    // Dalam ganda, jika tim yang melakukan servis menang, pemain servis berganti
+    if (matchData.service === 'A' && matchData.sideAScore % 2 === 1) {
+      // Pemain servis tim A berganti saat skor ganjil
+      matchData.serverPlayer = matchData.serverPlayer === 1 ? 2 : 1;
+    } else if (matchData.service === 'B' && matchData.sideBScore % 2 === 1) {
+      // Pemain servis tim B berganti saat skor ganjil
+      matchData.serverPlayer = matchData.serverPlayer === 1 ? 2 : 1;
+    }
+  }
+  
+  // Update posisi servis berdasarkan skor server
+  const serverScore = matchData.service === 'A' ? matchData.sideAScore : matchData.sideBScore;
+  matchData.serverPosition = serverScore % 2 === 0 ? 'right' : 'left';
+  
+  // Update tampilan
+  updateServiceIndicator();
+}
+
+// Fungsi untuk menampilkan indikator servis
+function updateServiceIndicator() {
+  const indicator = document.getElementById('serviceIndicator');
+  indicator.className = 'shuttle';
+  indicator.classList.add(`service-${matchData.service.toLowerCase()}`);
+  
+  // Tambahkan kelas untuk menunjukkan posisi server (opsional, jika ingin menampilkan posisi)
+  indicator.classList.add(`server-${matchData.serverPosition}`);
+  
+  // Untuk permainan ganda, tambahkan indikator pemain server (opsional)
+  if (matchData.matchType === 'double') {
+    indicator.classList.add(`player-${matchData.serverPlayer}`);
+  }
+  
+  // Update teks informasi servis (opsional)
+  const serviceInfoText = document.getElementById('serviceInfo');
+  if (serviceInfoText) {
+    const side = matchData.service;
+    const position = matchData.serverPosition === 'right' ? 'kanan' : 'kiri';
+    
+    if (matchData.matchType === 'single') {
+      serviceInfoText.textContent = `Servis Side ${side} dari ${position}`;
+    } else {
+      serviceInfoText.textContent = `Servis Side ${side} (Pemain ${matchData.serverPlayer}) dari ${position}`;
+    }
+  }
+}
+    
+ // Ganti event listener untuk tombol skor
+document.querySelectorAll('.score-button.increment').forEach(button => {
+  button.addEventListener('click', function() {
+    const side = this.dataset.side;
+    
+    if (side === 'A') {
+      matchData.sideAScore++;
+      updateService('A'); // Side A memenangkan rally
+    } else {
+      matchData.sideBScore++;
+      updateService('B'); // Side B memenangkan rally
+    }
+    
+    updateScoreDisplay();
+  });
+});
+
+document.querySelectorAll('.score-button.decrement').forEach(button => {
+  button.addEventListener('click', function() {
+    const side = this.dataset.side;
+    
+    if (side === 'A' && matchData.sideAScore > 0) {
+      matchData.sideAScore--;
+      // Tidak mengubah servis saat mengurangi skor
+    } else if (side === 'B' && matchData.sideBScore > 0) {
+      matchData.sideBScore--;
+      // Tidak mengubah servis saat mengurangi skor
+    }
+    
+    updateScoreDisplay();
+  });
+});
+   
+    // Handle switch service button
+    document.querySelector('.switch-service').addEventListener('click', function() {
+  matchData.service = matchData.service === 'A' ? 'B' : 'A';
+  
+  // Reset posisi server saat pergantian servis manual
+  const serverScore = matchData.service === 'A' ? matchData.sideAScore : matchData.sideBScore;
+  matchData.serverPosition = serverScore % 2 === 0 ? 'right' : 'left';
+  
+  updateServiceIndicator();
+  
+  // Kirim update via socket
+  socket.emit('scoreUpdate', {
+    matchId: matchData.id,
+    setNumber: matchData.currentSet,
+    sideAScore: matchData.sideAScore,
+    sideBScore: matchData.sideBScore,
+    service: matchData.service
+  });
+});    
+    // Handle complete set button
+    document.querySelectorAll('.complete-set').forEach(button => {
+      button.addEventListener('click', function() {
+        const setNumber = parseInt(this.dataset.set);
+        
+        // Save current set scores
+        fetch(`/api/complete-set/${matchData.id}/${setNumber}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            sideA: matchData.sideAScore,
+            sideB: matchData.sideBScore
+          })
+        }).then(() => {
+          // Mark set as completed in UI
+          const setElement = document.querySelector(`.set[data-set="${setNumber}"]`);
+          setElement.classList.add('completed');
+          this.remove();
+          
+          // Find next incomplete set
+          const nextSet = matchData.sets.find(s => !s.completed && s.set_number > setNumber);
+          if (nextSet) {
+            matchData.currentSet = nextSet.set_number;
+            matchData.sideAScore = 0;
+            matchData.sideBScore = 0;
+            updateScoreDisplay();
+            
+            // Highlight active set
+            document.querySelectorAll('.set').forEach(s => s.classList.remove('active'));
+            document.querySelector(`.set[data-set="${matchData.currentSet}"]`).classList.add('active');
+          } else {
+            // All sets completed, suggest ending match
+            alert('All sets completed. You can now end the match.');
+          }
+        });
+      });
+    });
+    
+    // Handle switch sides button
+    document.getElementById('switchSides').addEventListener('click', function() {
+      if (confirm('Are you sure you want to switch sides?')) {
+        // Call API to switch sides
+        fetch(`/api/switch-sides/${matchData.id}`, {
+          method: 'PUT'
+        }).then(() => {
+          // Switch scores
+          const tempScore = matchData.sideAScore;
+          matchData.sideAScore = matchData.sideBScore;
+          matchData.sideBScore = tempScore;
+          
+          // Switch service
+          matchData.service = matchData.service === 'A' ? 'B' : 'A';
+          
+          // Update display
+          updateScoreDisplay();
+          
+          // Notify live scoreboard
+          socket.emit('switchSides', { matchId: matchData.id });
+          
+          // Reload to get updated player positions
+          setTimeout(() => location.reload(), 500);
+        });
+      }
+    });
+    
+    // Handle end match button
+    document.getElementById('endMatch').addEventListener('click', function() {
+      // Determine winner based on completed sets
+      let sideASets = 0;
+      let sideBSets = 0;
+      
+      matchData.sets.forEach(set => {
+        if (set.completed) {
+          if (set.side_a_score > set.side_b_score) sideASets++;
+          else if (set.side_b_score > set.side_a_score) sideBSets++;
+        }
+      });
+      
+      const winner = sideASets > sideBSets ? 'A' : 'B';
+      
+      if (confirm(`End match? Side ${winner} will be declared the winner.`)) {
+        // Call API to end match
+        fetch(`/api/end-match/${matchData.id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            winner
+          })
+        }).then(() => {
+          alert('Match ended successfully.');
+          window.location.href = '/admin/history';
+        });
+      }
+    });
+    
+    // Initialize with first set active
+    document.addEventListener('DOMContentLoaded', function() {
+      const activeSet = matchData.sets.find(s => !s.completed);
+      if (activeSet) {
+        matchData.currentSet = activeSet.set_number;
+        matchData.sideAScore = activeSet.side_a_score;
+        matchData.sideBScore = activeSet.side_b_score;
+        
+        document.querySelectorAll('.set').forEach(s => s.classList.remove('active'));
+        document.querySelector(`.set[data-set="${matchData.currentSet}"]`).classList.add('active');
+        
+        updateScoreDisplay();
+      }
+    });
+  </script>
+</body>
+</html>

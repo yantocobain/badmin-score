@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+  <div class="admin-container">
+    <h1>Settings</h1>
+    
+    <form action="/admin/settings" method="POST" class="settings-form">
+      <div class="form-group">
+        <label for="maxSets">Number of Sets:</label>
+        <input type="number" name="maxSets" id="maxSets" value="<%= settings.max_sets || 3 %>" min="1" max="5" required>
+      </div>
+      
+      <div class="form-group">
+        <label for="pointsToWin">Points to Win a Set:</label>
+        <input type="number" name="pointsToWin" id="pointsToWin" value="<%= settings.points_to_win || 21 %>" min="1" max="30" required>
+      </div>
+      
+      <div class="form-group">
+        <label for="layout">Default Layout:</label>
+        <select name="layout" id="layout">
+          <option value="layout1" <%= settings.layout === 'layout1' ? 'selected' : '' %>>Layout 1</option>
+          <option value="layout2" <%= settings.layout === 'layout2' ? 'selected' : '' %>>Layout 2</option>
+          <option value="layout3" <%= settings.layout === 'layout3' ? 'selected' : '' %>>Layout 3</option>
+        </select>
+      </div>
+      
+      <div class="form-actions">
+        <a href="/admin" class="button secondary">Cancel</a>
+        <button type="submit" class="button primary">Save Settings</button>
+      </div>
+    </form>
+  </div>
+</body>
+</html>

@@ -1,0 +1,141 @@
+  /* layout3.css */
+  .layout3 {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background-color: #222;
+    color: white;
+  }
+  
+  .layout3 .top-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    background-color: #1a1a1a;
+  }
+  
+  .layout3 .match-info {
+    text-align: center;
+  }
+  
+  .layout3 .match-info h1 {
+    color: #f8f8f8;
+    margin-bottom: 5px;
+    font-size: 2.5rem;
+  }
+  
+  .layout3 .match-type {
+    font-size: 1.2rem;
+    color: #ccc;
+  }
+  
+  .layout3 .side {
+    width: 30%;
+  }
+  
+  .layout3 .player-info {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .layout3 .side-a .player-info {
+    align-items: flex-start;
+  }
+  
+  .layout3 .side-b .player-info {
+    align-items: flex-end;
+  }
+  
+  .layout3 .player {
+    margin-bottom: 10px;
+    padding: 10px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 5px;
+    min-width: 200px;
+    text-align: center;
+  }
+  
+  .layout3 .player-name {
+    font-size: 1.2rem;
+    font-weight: bold;
+  }
+  
+  .layout3 .country-flag {
+    font-size: 0.9rem;
+    margin-bottom: 5px;
+    color: #ccc;
+  }
+  
+  .layout3 .main-score-section {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 60px;
+    flex: 1;
+    background-color: rgba(0, 0, 0, 0.3);
+  }
+  
+  .layout3 .main-score {
+    font-size: 9rem;
+    font-weight: bold;
+    width: 200px;
+    text-align: center;
+  }
+  
+  .layout3 .service-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100px;
+    height: 100px;
+  }
+  
+  .layout3 .shuttle {
+    width: 80px;
+    height: 80px;
+    background-image: url('/images/shuttlecock.svg');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    transition: transform 0.3s;
+  }
+  
+  .layout3 .service-a {
+    transform: rotate(-45deg) translateX(-20px);
+  }
+  
+  .layout3 .service-b {
+    transform: rotate(45deg) translateX(20px);
+  }
+  
+  .layout3 .sets-section {
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+    background-color: #1a1a1a;
+    gap: 30px;
+  }
+  
+  .layout3 .set {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .layout3 .set-number {
+    font-size: 1rem;
+    color: #ccc;
+    margin-right: 10px;
+  }
+  
+  .layout3 .set-score {
+    font-size: 1.5rem;
+    font-weight: bold;
+  }
+  
+  .layout3 .set-divider {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #ccc;
+  }

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <link rel="stylesheet" href="/css/layouts/layout2.css">
+  <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+  <div class="scoreboard layout2">
+    <div class="header">
+      <h1>Badminton Scoreboard</h1>
+      <div class="match-type"><%= match.match_type === 'single' ? 'Singles' : 'Doubles' %> Match</div>
+    </div>
+    
+    <div class="main-container">
+      <div class="players-container">
+        <div class="side side-a">
+          <% sides.A.forEach(player => { %>
+            <div class="player">
+              <% if (player.country) { %>
+                <div class="country-flag"><%= player.country %></div>
+              <% } %>
+              <div class="player-name"><%= player.name %></div>
+            </div>
+          <% }) %>
+        </div>
+        
+        <div class="side side-b">
+          <% sides.B.forEach(player => { %>
+            <div class="player">
+              <% if (player.country) { %>
+                <div class="country-flag"><%= player.country %></div>
+              <% } %>
+              <div class="player-name"><%= player.name %></div>
+            </div>
+          <% }) %>
+        </div>
+      </div>
+      
+      <div class="scores-container">
+        <div class="main-scores">
+          <div class="main-score" id="sideAMainScore"><%= scores[scores.length - 1].side_a_score || 0 %></div>
+          <div class="service-indicator">
+            <div class="shuttle" id="serviceIndicator"></div>
+          </div>
+          <div class="main-score" id="sideBMainScore"><%= scores[scores.length - 1].side_b_score || 0 %></div>
+        </div>
+        
+        <div class="sets-display">
+          <% scores.forEach(score => { %>
+            <div class="set">
+              <div class="set-number">Set <%= score.set_number %></div>
+              <div class="set-scores">
+                <div class="set-score" id="setA<%= score.set_number %>"><%= score.side_a_score %></div>
+                <div class="set-score" id="setB<%= score.set_number %>"><%= score.side_b_score %></div>
+              </div>
+            </div>
+          <% }) %>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+</body>
+</html>

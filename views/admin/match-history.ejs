@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+  <div class="admin-container">
+    <h1>Match History</h1>
+    
+    <div class="history-list">
+      <% if (matches && matches.length > 0) { %>
+        <table class="history-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Type</th>
+              <th>Teams</th>
+              <th>Result</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% matches.forEach(match => { %>
+              <tr>
+                <td><%= new Date(match.date).toLocaleDateString() %></td>
+                <td><%= match.match_type === 'single' ? 'Singles' : 'Doubles' %></td>
+                <td class="match-teams">
+                  <div class="match-logos">
+                    <% if (match.side_a_logo) { %>
+                      <img src="<%= match.side_a_logo %>" alt="Side A" class="history-logo">
+                    <% } %>
+                    vs
+                    <% if (match.side_b_logo) { %>
+                      <img src="<%= match.side_b_logo %>" alt="Side B" class="history-logo">
+                    <% } %>
+                  </div>
+                </td>
+                <td>
+                  Side <%= match.winner_side %>
+                  (<%= match.side_a_sets %>-<%= match.side_b_sets %>)
+                </td>
+                <td>
+                  <a href="/print/<%= match.id %>" target="_blank" class="button small">Print</a>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      <% } else { %>
+        <div class="no-data">No match history available.</div>
+      <% } %>
+    </div>
+    
+    <div class="admin-actions">
+      <a href="/admin" class="button secondary">Back to Dashboard</a>
+    </div>
+  </div>
+</body>
+</html>

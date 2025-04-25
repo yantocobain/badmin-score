@@ -1,0 +1,186 @@
+/* layout1.css */
+.layout1 {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background-color: #000;
+    color: white;
+  }
+  
+  .layout1 .header {
+    padding: 20px;
+    text-align: center;
+    background-color: rgba(0, 0, 0, 0.6);
+  }
+  
+  .layout1 .header h1 {
+    font-size: 2rem;
+    margin-bottom: 5px;
+    color: white;
+  }
+  
+  .layout1 .match-type {
+    font-size: 1.2rem;
+    color: #f08c00;
+  }
+  
+  .layout1 .main-scoreboard {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex: 1;
+    padding: 20px;
+    background: linear-gradient(to bottom, #000066, #000033);
+  }
+  
+  .layout1 .side {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    border-radius: 10px;
+  }
+  
+  .layout1 .side-a {
+    background: linear-gradient(to bottom, rgba(0, 107, 179, 0.3), rgba(0, 107, 179, 0.1));
+  }
+  
+  .layout1 .side-b {
+    background: linear-gradient(to bottom, rgba(240, 140, 0, 0.3), rgba(240, 140, 0, 0.1));
+  }
+  
+  .layout1 .player-info {
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  
+  .layout1 .player {
+    margin: 10px 0;
+  }
+  
+  .layout1 .country-flag {
+    display: inline-block;
+    padding: 5px 10px;
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    margin-bottom: 5px;
+  }
+  
+  .layout1 .player-name {
+    font-size: 1.8rem;
+    font-weight: bold;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  }
+  
+  .layout1 .main-score {
+    font-size: 6rem;
+    font-weight: bold;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    padding: 20px;
+    background-color: rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    min-width: 120px;
+    text-align: center;
+  }
+  
+  .layout1 .service-indicator {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 0 20px;
+  }
+  
+  .layout1 .shuttle {
+    width: 30px;
+    height: 30px;
+    background-image: url('/images/shuttle.png'); /* Tambahkan gambar shuttle jika ada */
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    transition: transform 0.3s;
+  }
+  
+  .layout1 .service-info {
+    margin-top: 10px;
+    font-size: 14px;
+    text-align: center;
+  }  
+  
+  .layout1 .sets-display {
+    padding: 15px;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+  }
+  
+  .layout1 .set {
+    background-color: rgba(255, 255, 255, 0.1);
+    padding: 10px 20px;
+    border-radius: 5px;
+    min-width: 100px;
+  }
+  
+  .layout1 .set-number {
+    font-weight: bold;
+    margin-bottom: 5px;
+    color: #f08c00;
+  }
+  
+  .layout1 .set-scores {
+    display: flex;
+    justify-content: space-around;
+  }
+
+  /* Additional logo styling for layout1 */
+.layout1 .team-logo {
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+.layout1 .team-logo-img {
+  max-width: 120px;
+  max-height: 80px;
+  background-color: rgba(255, 255, 255, 0.15);
+  padding: 8px;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+/* For side-specific styling */
+.layout1 .side-a .team-logo-img {
+  border: 2px solid rgba(0, 107, 179, 0.6);
+}
+
+.layout1 .side-b .team-logo-img {
+  border: 2px solid rgba(240, 140, 0, 0.6);
+}
+  
+  @media (max-width: 768px) {
+    .layout1 .team-logo-img {
+      max-width: 80px;
+      max-height: 60px;
+    }
+    .layout1 .main-scoreboard {
+      flex-direction: column;
+    }
+    
+    .layout1 .side {
+      width: 100%;
+      margin-bottom: 20px;
+    }
+    
+    .layout1 .player-name {
+      font-size: 1.4rem;
+    }
+    
+    .layout1 .main-score {
+      font-size: 4rem;
+    }
+    
+    .layout1 .sets-display {
+      flex-wrap: wrap;
+    }
+  }

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <link rel="stylesheet" href="/css/layouts/layout1.css">  
+</head>
+<body data-match-id="<%= match.id %>" data-match-type="<%= match.match_type %>">
+  <div class="scoreboard layout1">
+    <div class="header">
+      <h1>Badminton Scoreboard</h1>
+      <div class="match-type"><%= match.match_type === 'single' ? 'Singles' : 'Doubles' %> Match</div>
+    </div>
+    
+    <div class="main-scoreboard">
+      <div class="side side-a">
+        <% if (match.side_a_logo) { %>
+          <div class="team-logo">
+            <img src="<%= match.side_a_logo %>" alt="Side A" class="team-logo-img">
+          </div>
+        <% } %>
+        
+        <div class="player-info">
+          <% sides.A.forEach(player => { %>
+            <div class="player">
+              <div class="player-name"><%= player.name %></div>
+              <% if (player.country) { %>
+                <div class="player-country"><%= player.country %></div>
+              <% } %>
+            </div>
+          <% }) %>
+        </div>
+        <div class="main-score" id="sideAMainScore"><%= scores[scores.length - 1].side_a_score || 0 %></div>
+      </div>
+      
+      <div class="service-indicator">
+        <div class="shuttle" id="serviceIndicator"></div>
+        <div id="serviceInfo" class="service-info">Servis: Side A</div>
+      </div>
+      
+      <div class="side side-b">
+        <% if (match.side_b_logo) { %>
+          <div class="team-logo">
+            <img src="<%= match.side_b_logo %>" alt="Side B" class="team-logo-img">
+          </div>
+        <% } %>
+        
+        <div class="player-info">
+          <% sides.B.forEach(player => { %>
+            <div class="player">
+              <div class="player-name"><%= player.name %></div>
+              <% if (player.country) { %>
+                <div class="player-country"><%= player.country %></div>
+              <% } %>
+            </div>
+          <% }) %>
+        </div>
+        <div class="main-score" id="sideBMainScore"><%= scores[scores.length - 1].side_b_score || 0 %></div>
+      </div>
+    </div>
+    
+    <div class="sets-display">
+      <% scores.forEach(score => { %>
+        <div class="set <%= score.completed ? 'completed' : '' %>">
+          <div class="set-number">Set <%= score.set_number %></div>
+          <div class="set-scores">
+            <div class="set-score" id="setA<%= score.set_number %>"><%= score.side_a_score %></div>
+            <div class="set-score" id="setB<%= score.set_number %>"><%= score.side_b_score %></div>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+  </div>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/js/scoreboard.js"></script>
+</body>
+</html>

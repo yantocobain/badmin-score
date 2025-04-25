@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+  <div class="admin-container">
+    <h1>Match Setup</h1>
+    
+    <form action="/admin/setup" method="POST" class="setup-form" enctype="multipart/form-data">
+      <div class="form-group">
+        <label for="matchType">Match Type:</label>
+        <select name="matchType" id="matchType" required>
+          <option value="single">Singles</option>
+          <option value="double">Doubles</option>
+        </select>
+      </div>
+      
+      <div class="match-sides">
+        <div class="side">
+          <h2>Side A</h2>
+          <div class="player-input">
+            <label for="player1A">Player 1:</label>
+            <input type="text" name="player1A" id="player1A" required>
+          </div>
+          
+          <div class="player-input doubles-only">
+            <label for="player2A">Player 2:</label>
+            <input type="text" name="player2A" id="player2A">
+          </div>
+          
+          <div class="logo-input">
+            <label for="logoA">Team/Country Logo:</label>
+            <input type="file" name="logoA" id="logoA" accept="image/*">
+            <div class="logo-preview" id="logoPreviewA"></div>
+            <small>Or enter logo path:</small>
+            <input type="text" name="logoPathA" id="logoPathA" placeholder="/images/logos/country.png">
+          </div>
+        </div>
+        
+        <div class="side">
+          <h2>Side B</h2>
+          <div class="player-input">
+            <label for="player1B">Player 1:</label>
+            <input type="text" name="player1B" id="player1B" required>
+          </div>
+          
+          <div class="player-input doubles-only">
+            <label for="player2B">Player 2:</label>
+            <input type="text" name="player2B" id="player2B">
+          </div>
+          
+          <div class="logo-input">
+            <label for="logoB">Team/Country Logo:</label>
+            <input type="file" name="logoB" id="logoB" accept="image/*">
+            <div class="logo-preview" id="logoPreviewB"></div>
+            <small>Or enter logo path:</small>
+            <input type="text" name="logoPathB" id="logoPathB" placeholder="/images/logos/country.png">
+          </div>
+        </div>
+      </div>
+      
+      <div class="form-actions">
+        <a href="/admin" class="button secondary">Cancel</a>
+        <button type="submit" class="button primary">Start Match</button>
+      </div>
+    </form>
+  </div>
+  
+  <script>
+    document.getElementById('matchType').addEventListener('change', function() {
+      const doublesFields = document.querySelectorAll('.doubles-only');
+      const isDoubles = this.value === 'double';
+      
+      doublesFields.forEach(field => {
+        if (isDoubles) {
+          field.style.display = 'block';
+          field.querySelectorAll('input').forEach(input => {
+            if (input.id.startsWith('player')) {
+              input.required = true;
+            }
+          });
+        } else {
+          field.style.display = 'none';
+          field.querySelectorAll('input').forEach(input => {
+            input.required = false;
+          });
+        }
+      });
+    });
+
+    // Preview uploaded logos
+    function previewLogo(input, previewId) {
+      const preview = document.getElementById(previewId);
+      const file = input.files[0];
+      
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          preview.innerHTML = `<img src="${e.target.result}" alt="Logo Preview" style="max-width: 100px; max-height: 100px;">`;
+        }
+        reader.readAsDataURL(file);
+      }
+    }
+    
+    document.getElementById('logoA').addEventListener('change', function() {
+      previewLogo(this, 'logoPreviewA');
+      // Clear text field if file is selected
+      document.getElementById('logoPathA').value = '';
+    });
+    
+    document.getElementById('logoB').addEventListener('change', function() {
+      previewLogo(this, 'logoPreviewB');
+      // Clear text field if file is selected
+      document.getElementById('logoPathB').value = '';
+    });
+    
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', function() {
+      const matchTypeSelect = document.getElementById('matchType');
+      if (matchTypeSelect) {
+        matchTypeSelect.dispatchEvent(new Event('change'));
+      }
+    });
+  </script>
+</body>
+</html>

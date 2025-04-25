@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+  <div class="admin-container">
+    <h1>Admin Dashboard</h1>
+    
+    <div class="admin-menu">
+      <a href="/admin/setup" class="admin-button">New Match</a>
+      <a href="/admin/control" class="admin-button">Current Match</a>
+      <a href="/admin/history" class="admin-button">Match History</a>
+      <a href="/admin/settings" class="admin-button">Settings</a>
+      <a href="/scoreboard?layout=<%= settings.layout %>" class="admin-button" target="_blank">Open Scoreboard</a>
+    </div>
+    
+    <div class="view-options">
+      <h2>Scoreboard Layouts</h2>
+      <div class="layout-options">
+        <a href="/scoreboard?layout=layout1" target="_blank" class="layout-preview">
+          <!-- <div class="layout-image layout1"></div> -->
+          <div class="layout-preview">
+            <iframe src="/scoreboard?layout=layout1" class="layout-iframe"></iframe>
+            <span>Layout 1</span>
+          </div>
+        </a>
+        <a href="/scoreboard?layout=layout2" target="_blank" class="layout-preview">
+          <div class="layout-image layout2"></div>
+          <span>Layout 2</span>
+        </a>
+        <a href="/scoreboard?layout=layout3" target="_blank" class="layout-preview">
+          <div class="layout-image layout3"></div>
+          <span>Layout 3</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
