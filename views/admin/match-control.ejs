@@ -103,24 +103,26 @@
   
   <script>
     // Initialize socket connection
-    const socket = io();
+const socket = io();
     
     // Match data
     const matchData = {
-  id: <%= match.id %>,
-  currentSet: 1,
-  sets: <%- JSON.stringify(scores) %>,
-  maxSets: <%= settings.max_sets || 3 %>,
-  pointsToWin: <%= settings.points_to_win || 21 %>,
-  service: 'A', // Side yang sedang service
-  serverPosition: 'right', // Posisi server (right/left)
-  serverPlayer: 1, // Player 1 atau 2 dalam tim (untuk doubles)
-  receiverPlayer: 1, // Player 1 atau 2 dalam tim penerima (untuk doubles)
-  lastWinner: 'A', // Side yang memenangkan rally terakhir
-  matchType: '<%= match.match_type %>', // 'single' atau 'double'
-  sideAScore: 0,
-  sideBScore: 0
-};
+      id: <%= match.id %>,
+      currentSet: 1,
+      sets: <%- JSON.stringify(scores) %>,
+      maxSets: <%= settings.max_sets || 3 %>,
+      pointsToWin: <%= settings.points_to_win || 21 %>,
+      service: 'A', // Side yang sedang service
+      serverPosition: 'right', // Posisi server (right/left)
+      serverPlayer: 1, // Player 1 atau 2 dalam tim (untuk doubles)
+      receiverPlayer: 1, // Player 1 atau 2 dalam tim penerima (untuk doubles)
+      lastWinner: 'A', // Side yang memenangkan rally terakhir
+      matchType: '<%= match.match_type %>', // 'single' atau 'double'
+      sideAScore: 0,
+      sideBScore: 0,
+      sideALogo: '<%= match.side_a_logo %>', // Logo sisi A
+      sideBLogo: '<%= match.side_b_logo %>'  // Logo sisi B
+    };
     matchData.sideAScore = matchData.sets[matchData.currentSet - 1].side_a_score;
     matchData.sideBScore = matchData.sets[matchData.currentSet - 1].side_b_score;
     document.getElementById('sideAScore').textContent = matchData.sideAScore;
@@ -143,7 +145,9 @@
         setNumber: matchData.currentSet,
         sideAScore: matchData.sideAScore,
         sideBScore: matchData.sideBScore,
-        service: matchData.service
+        service: matchData.service,
+        serverPosition: matchData.serverPosition,
+        serverPlayer: matchData.serverPlayer
       });
       
       // Update API
@@ -325,6 +329,11 @@ document.querySelectorAll('.score-button.decrement').forEach(button => {
           matchData.sideAScore = matchData.sideBScore;
           matchData.sideBScore = tempScore;
           
+          // Switch logos
+          const tempLogo = matchData.sideALogo;
+          matchData.sideALogo = matchData.sideBLogo;
+          matchData.sideBLogo = tempLogo;
+          
           // Switch service
           matchData.service = matchData.service === 'A' ? 'B' : 'A';
           
@@ -332,7 +341,11 @@ document.querySelectorAll('.score-button.decrement').forEach(button => {
           updateScoreDisplay();
           
           // Notify live scoreboard
-          socket.emit('switchSides', { matchId: matchData.id });
+          socket.emit('switchSides', { 
+            matchId: matchData.id,
+            sideALogo: matchData.sideALogo,
+            sideBLogo: matchData.sideBLogo
+          });
           
           // Reload to get updated player positions
           setTimeout(() => location.reload(), 500);

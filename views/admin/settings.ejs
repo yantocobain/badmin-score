@@ -30,6 +30,20 @@
         </select>
       </div>
       
+      <div class="form-group">
+        <label for="showHistory">Show Match History on Scoreboard:</label>
+        <select name="showHistory" id="showHistory">
+          <option value="true" <%= settings.show_history === 'true' ? 'selected' : '' %>>Enabled</option>
+          <option value="false" <%= settings.show_history !== 'true' ? 'selected' : '' %>>Disabled</option>
+        </select>
+        <small>When enabled, match history will be shown on scoreboard when no match is in progress</small>
+      </div>
+      
+      <div class="form-group">
+        <label for="historyLimit">Number of History Matches to Show:</label>
+        <input type="number" name="historyLimit" id="historyLimit" value="<%= settings.history_limit || 5 %>" min="1" max="10">
+      </div>
+      
       <div class="form-actions">
         <a href="/admin" class="button secondary">Cancel</a>
         <button type="submit" class="button primary">Save Settings</button>

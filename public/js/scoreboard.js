@@ -1,4 +1,4 @@
-// scoreboard.js yang diperbarui
+// scoreboard.js
 document.addEventListener('DOMContentLoaded', function() {
   const socket = io();
   
@@ -27,8 +27,19 @@ document.addEventListener('DOMContentLoaded', function() {
     socket.on('switchSides', function(data) {
       console.log("Side switch received:", data);
       if (data.matchId === parseInt(matchId)) {
+        // Jika data logo dikirimkan, perbarui logo
+        if (data.sideALogo && data.sideBLogo) {
+          const logoA = document.querySelector('.side-a .team-logo img');
+          const logoB = document.querySelector('.side-b .team-logo img');
+          
+          if (logoA) logoA.src = data.sideALogo;
+          if (logoB) logoB.src = data.sideBLogo;
+        }
+        
         // Muat ulang untuk mendapatkan posisi pemain yang diperbarui
-        location.reload();
+        setTimeout(() => {
+          location.reload();
+        }, 1000); // Tunggu 1 detik untuk memastikan database telah diperbarui
       }
     });
   } else {

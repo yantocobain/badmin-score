@@ -5,20 +5,45 @@ const http = require('http');
 const { exec } = require('child_process');
 const socketIo = require('socket.io');
 
+// Import routes
 const indexRouter = require('./routes/index');
 const adminRouter = require('./routes/admin');
 const apiRouter = require('./routes/api');
 
+// Import initializer
+const { initializeSettings } = require('./app-initializer');
+const { ensureDirectories } = require('./utils/ensure-directories');
+
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
+
+// Inisialisasi aplikasi
+async function initialize() {
+  try {
+    // Pastikan semua direktori yang diperlukan ada
+    await ensureDirectories();
+    
+    // Inisialisasi pengaturan aplikasi
+    initializeSettings();
+    
+    console.log('Application initialized successfully');
+  } catch (error) {
+    console.error('Error during application initialization:', error);
+  }
+}
+
+// Panggil inisialisasi
+initialize().catch(err => {
+  console.error('Failed to initialize application:', err);
+});
 
 // View engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
 app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Routes
@@ -43,15 +68,6 @@ io.on('connection', (socket) => {
   });
 });
 
-// // Error handler
-// app.use((err, req, res, next) => {
-//   res.status(err.status || 500);
-//   res.render('error', {
-//     message: err.message,
-//     error: process.env.NODE_ENV === 'development' ? err : {}
-//   });
-// });
-
 // Error handler
 app.use((err, req, res, next) => {
     res.status(err.status || 500);
@@ -62,6 +78,7 @@ app.use((err, req, res, next) => {
       cssFile: 'dashboard'
     });
   });
+
 // Launch Chrome in incognito mode
 const launchChrome = () => {
   // For Linux

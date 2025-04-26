@@ -3,9 +3,30 @@ const db = require('../database/db');
 
 class Match {
   static create(matchType, playerIds, countries, sideALogo, sideBLogo) {
-    if (typeof sideALogo !== 'string' || typeof sideBLogo !== 'string') {
-      throw new Error('Invalid logo paths');
+    // Validasi parameter input
+    if (!matchType || (matchType !== 'single' && matchType !== 'double')) {
+      throw new Error('Invalid match type. Must be either "single" or "double"');
     }
+    
+    if (!playerIds || !Array.isArray(playerIds)) {
+      throw new Error('Player IDs must be an array');
+    }
+    
+    // Validasi jumlah pemain berdasarkan jenis pertandingan
+    const expectedPlayerCount = matchType === 'single' ? 2 : 4;
+    if (playerIds.length !== expectedPlayerCount) {
+      throw new Error(`Expected ${expectedPlayerCount} players for ${matchType} match, but got ${playerIds.length}`);
+    }
+
+    // Pastikan logo memiliki nilai valid
+    sideALogo = sideALogo || '/images/logos/default.png';
+    sideBLogo = sideBLogo || '/images/logos/default.png';
+    
+    // Format countries array jika perlu
+    if (!countries || !Array.isArray(countries)) {
+      countries = new Array(playerIds.length).fill(null);
+    }
+    
     const date = new Date().toISOString();
     
     const insertMatch = db.prepare(`
@@ -31,10 +52,13 @@ class Match {
     try {
       // Use transaction to ensure data integrity
       const matchId = db.transaction(() => {
+        console.log(`Inserting match with type: ${matchType}, date: ${date}, logoA: ${sideALogo}, logoB: ${sideBLogo}`);
+        
         // Insert match
         const matchInfo = insertMatch.run(matchType, date, sideALogo, sideBLogo);
-
         const matchId = matchInfo.lastInsertRowid;
+        
+        console.log(`Match created with ID: ${matchId}`);
         
         // Insert players and match_players
         const sides = ['A', 'B'];
@@ -47,6 +71,8 @@ class Match {
             const playerName = playerIds[sideIndex];
             const country = countries[sideIndex] || null;
             
+            console.log(`Inserting single player: ${playerName}, country: ${country}, side: ${side}`);
+            
             const playerInfo = insertPlayer.run(playerName, country);
             const playerId = playerInfo.lastInsertRowid;
             
@@ -58,6 +84,8 @@ class Match {
             for (let pos = 0; pos < 2; pos++) {
               const playerName = playerIds[playerOffset + pos];
               const country = countries[playerOffset + pos] || null;
+              
+              console.log(`Inserting double player: ${playerName}, country: ${country}, side: ${side}, position: ${pos + 1}`);
               
               const playerInfo = insertPlayer.run(playerName, country);
               const playerId = playerInfo.lastInsertRowid;
@@ -141,6 +169,29 @@ class Match {
     return switchSidesQuery.run(matchId);
   }
   
+    // Method untuk menukar logo saat pergantian sisi
+  static switchLogos(matchId, sideALogo, sideBLogo) {
+    const updateLogos = db.prepare(`
+      UPDATE matches
+      SET side_a_logo = ?, side_b_logo = ?
+      WHERE id = ?
+    `);
+    
+    // Menukar logo tim A dan tim B
+    return updateLogos.run(sideBLogo, sideALogo, matchId);
+  }
+  
+  // Method untuk memperbarui path logo
+  static updateLogo(matchId, side, logoPath) {
+    const updateQuery = db.prepare(`
+      UPDATE matches
+      SET ${side === 'A' ? 'side_a_logo' : 'side_b_logo'} = ?
+      WHERE id = ?
+    `);
+    
+    return updateQuery.run(logoPath, matchId);
+  }
+  
   static endMatch(matchId, winnerSide) {
     const updateMatch = db.prepare(`
       UPDATE matches
@@ -151,7 +202,7 @@ class Match {
     return updateMatch.run(winnerSide, matchId);
   }
   
-  static getHistory() {
+  static getHistory(limit = 10) {
     
     return db.prepare(`
       SELECT m.*, 
@@ -162,7 +213,27 @@ class Match {
       WHERE m.status = 'completed'
       GROUP BY m.id
       ORDER BY m.date DESC
-    `).all();
+      LIMIT ?
+    `).all(limit);
+  }
+  
+  // Mendapatkan detail match beserta pemain untuk riwayat di frontend
+  static getHistoryDetail(matchId) {
+    const match = this.getById(matchId);
+    const players = this.getPlayers(matchId);
+    const scores = this.getScores(matchId);
+    
+    // Mengelompokkan pemain berdasarkan sisi
+    const sides = {
+      A: players.filter(p => p.side === 'A').sort((a, b) => a.position - b.position),
+      B: players.filter(p => p.side === 'B').sort((a, b) => a.position - b.position)
+    };
+    
+    return {
+      match,
+      sides,
+      scores
+    };
   }
 }
 

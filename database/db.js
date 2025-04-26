@@ -76,6 +76,10 @@ const initDb = () => {
   insertSetting.run('max_sets', '3');
   insertSetting.run('points_to_win', '21');
   insertSetting.run('layout', 'layout1');
+  
+  // Tambahkan pengaturan baru untuk fitur tampilan history
+  insertSetting.run('show_history', 'false');
+  insertSetting.run('history_limit', '5');
 
   // Check if we need to insert default data
   const playerCount = db.prepare('SELECT COUNT(*) as count FROM players').get().count;

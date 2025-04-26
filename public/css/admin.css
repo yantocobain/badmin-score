@@ -543,6 +543,62 @@
     display: flex;
     justify-content: center;
   }
+
+
+  .layout-card {
+    display: flex;
+    flex-direction: column;
+    width: 300px;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    transition: transform 0.2s;
+  }
+  
+  .layout-card:hover {
+    transform: translateY(-5px);
+  }
+  
+  .layout-thumb {
+    height: 180px;
+    overflow: hidden;
+  }
+  
+  .layout-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  .layout-info {
+    padding: 15px;
+    background-color: white;
+  }
+  
+  .layout-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+  }
+  
+  .view-button, .select-button {
+    padding: 8px 15px;
+    border-radius: 5px;
+    font-weight: 500;
+    cursor: pointer;
+  }
+  
+  .view-button {
+    background-color: #f0f0f0;
+    color: #333;
+    text-decoration: none;
+  }
+  
+  .select-button {
+    background-color: #006bb3;
+    color: white;
+    border: none;
+  }
   
   @media (max-width: 768px) {
     .match-sides {

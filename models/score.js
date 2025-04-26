@@ -60,6 +60,27 @@ class Score {
       players
     };
   }
+  
+  // Inisialisasi database dengan pengaturan baru
+  static initializeNewSettings() {
+    // Periksa apakah pengaturan show_history sudah ada
+    const showHistorySetting = db.prepare('SELECT value FROM settings WHERE key = ?').get('show_history');
+    
+    // Jika belum ada, tambahkan dengan nilai default "false"
+    if (!showHistorySetting) {
+      this.updateSetting('show_history', 'false');
+      console.log('Initialized show_history setting to false');
+    }
+    
+    // Periksa apakah pengaturan history_limit sudah ada
+    const historyLimitSetting = db.prepare('SELECT value FROM settings WHERE key = ?').get('history_limit');
+    
+    // Jika belum ada, tambahkan dengan nilai default "5"
+    if (!historyLimitSetting) {
+      this.updateSetting('history_limit', '5');
+      console.log('Initialized history_limit setting to 5');
+    }
+  }
 }
 
 module.exports = Score;

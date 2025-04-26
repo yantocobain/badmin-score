@@ -5,14 +5,425 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><%= title %></title>
   <link rel="stylesheet" href="/css/admin.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+  <style>
+    /* Gaya tambahan untuk UI yang lebih baik */
+    .logo-gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      gap: 15px;
+      margin-top: 15px;
+      max-height: 250px;
+      overflow-y: auto;
+      padding: 15px;
+      background-color: rgba(0,0,0,0.03);
+      border-radius: 5px;
+      scrollbar-width: thin;
+    }
+    
+    .logo-gallery::-webkit-scrollbar {
+      width: 8px;
+    }
+    
+    .logo-gallery::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 10px;
+    }
+    
+    .logo-gallery::-webkit-scrollbar-thumb {
+      background: #c1c1c1;
+      border-radius: 10px;
+    }
+    
+    .logo-option {
+      text-align: center;
+      cursor: pointer;
+      padding: 10px;
+      border-radius: 8px;
+      transition: all 0.2s;
+      position: relative;
+      border: 2px solid transparent;
+      background-color: white;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .logo-option:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+    
+    .logo-option.selected {
+      border-color: #006bb3;
+      box-shadow: 0 0 8px rgba(0, 107, 179, 0.5);
+    }
+    
+    .logo-option img {
+      max-width: 80px;
+      max-height: 80px;
+      object-fit: contain;
+      margin-bottom: 5px;
+    }
+    
+    .logo-name {
+      font-size: 0.8rem;
+      color: #666;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
+    }
+    
+    .logo-tabs {
+      display: flex;
+      margin-bottom: 0;
+      border-bottom: none;
+    }
+    
+    .logo-tab {
+      padding: 10px 20px;
+      cursor: pointer;
+      background-color: #f8f8f8;
+      border: 1px solid #ddd;
+      border-radius: 8px 8px 0 0;
+      margin-right: 5px;
+      transition: all 0.2s;
+      position: relative;
+      z-index: 5;
+      font-weight: 500;
+      color: #555;
+    }
+    
+    .logo-tab:hover {
+      background-color: #f0f0f0;
+    }
+    
+    .logo-tab.active {
+      background-color: #fff;
+      border-bottom: 1px solid #fff;
+      font-weight: 600;
+      color: #006bb3;
+    }
+    
+    .logo-tab i {
+      margin-right: 5px;
+    }
+    
+    .logo-content {
+      border: 1px solid #ddd;
+      padding: 20px;
+      border-radius: 0 8px 8px 8px;
+      margin-top: -1px;
+      position: relative;
+      z-index: 1;
+      background-color: #fff;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    
+    .logo-panel {
+      display: none;
+    }
+    
+    .logo-panel.active {
+      display: block;
+    }
+    
+    .upload-progress {
+      height: 6px;
+      width: 0%;
+      background-color: #006bb3;
+      margin-top: 8px;
+      border-radius: 5px;
+      transition: width 0.3s;
+    }
+    
+    .upload-status {
+      margin-top: 8px;
+      font-size: 0.9rem;
+      color: #555;
+    }
+    
+    .upload-container {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+    
+    .file-input-wrapper {
+      position: relative;
+      overflow: hidden;
+      display: inline-block;
+      cursor: pointer;
+      padding: 0;
+    }
+    
+    .file-input-wrapper input[type=file] {
+      position: absolute;
+      left: 0;
+      top: 0;
+      opacity: 0;
+      width: 100%;
+      height: 100%;
+      cursor: pointer;
+    }
+    
+    .browse-button {
+      display: inline-block;
+      padding: 10px 15px;
+      background-color: #f0f0f0;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      color: #333;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+    
+    .browse-button:hover {
+      background-color: #e5e5e5;
+    }
+    
+    .file-name {
+      margin-left: 10px;
+      color: #666;
+      font-style: italic;
+    }
+    
+    .upload-button {
+      padding: 10px 20px;
+      background-color: #006bb3;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+    
+    .upload-button i {
+      margin-right: 5px;
+    }
+    
+    .upload-button:hover {
+      background-color: #005a99;
+      transform: translateY(-2px);
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    
+    .upload-button:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+    
+    .logo-preview {
+      margin: 15px 0;
+      padding: 15px;
+      border: 1px dashed #ddd;
+      text-align: center;
+      background-color: #f9f9f9;
+      border-radius: 5px;
+      min-height: 100px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .logo-preview img {
+      max-width: 120px;
+      max-height: 120px;
+    }
+    
+    .logo-preview-text {
+      color: #999;
+      margin: 10px 0 0;
+      font-style: italic;
+    }
+    
+    .logo-actions {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 15px;
+    }
+    
+    .logo-action-button {
+      padding: 6px 12px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      transition: all 0.2s;
+      background-color: #f0f0f0;
+      color: #333;
+    }
+    
+    .logo-action-button i {
+      margin-right: 5px;
+    }
+    
+    .logo-action-button:hover {
+      background-color: #e0e0e0;
+    }
+    
+    .rename-button {
+      background-color: #28a745;
+      color: white;
+    }
+    
+    .rename-button:hover {
+      background-color: #218838;
+    }
+    
+    .delete-button {
+      background-color: #dc3545;
+      color: white;
+    }
+    
+    .delete-button:hover {
+      background-color: #c82333;
+    }
+    
+    .logo-select {
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      width: 100%;
+      font-size: 0.95rem;
+      margin-bottom: 15px;
+    }
+    
+    /* Modal styling */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.5);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .modal.active {
+      display: flex;
+    }
+    
+    .modal-content {
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      width: 400px;
+      max-width: 90%;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+    
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 10px;
+      margin-bottom: 15px;
+    }
+    
+    .modal-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: #333;
+    }
+    
+    .modal-close {
+      cursor: pointer;
+      font-size: 1.2rem;
+      color: #999;
+    }
+    
+    .modal-body {
+      margin-bottom: 15px;
+    }
+    
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      padding-top: 10px;
+      border-top: 1px solid #eee;
+    }
+    
+    .modal-button {
+      padding: 8px 15px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+    
+    .modal-button.primary {
+      background-color: #006bb3;
+      color: white;
+    }
+    
+    .modal-button.secondary {
+      background-color: #f0f0f0;
+      color: #333;
+    }
+    
+    .modal-button.danger {
+      background-color: #dc3545;
+      color: white;
+    }
+    
+    .modal-input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      font-size: 0.95rem;
+      margin-bottom: 15px;
+    }
+    
+    .animated-check {
+      width: 60px;
+      height: 60px;
+      margin: 0 auto 15px;
+      border-radius: 50%;
+      background-color: #28a745;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .animated-check i {
+      color: white;
+      font-size: 2rem;
+    }
+    
+    .empty-gallery {
+      text-align: center;
+      padding: 30px;
+      color: #999;
+      font-style: italic;
+    }
+  </style>
 </head>
 <body>
   <div class="admin-container">
     <h1>Match Setup</h1>
     
-    <form action="/admin/setup" method="POST" class="setup-form" enctype="multipart/form-data">
+    <form action="/admin/setup" method="POST" class="setup-form" enctype="multipart/form-data" id="setupForm">
       <div class="form-group">
         <label for="matchType">Match Type:</label>
+        <!-- PENTING: Pastikan nama ini 'matchType' dan bukan 'matchTypeSelect' -->
         <select name="matchType" id="matchType" required>
           <option value="single">Singles</option>
           <option value="double">Doubles</option>
@@ -33,11 +444,72 @@
           </div>
           
           <div class="logo-input">
-            <label for="logoA">Team/Country Logo:</label>
-            <input type="file" name="logoA" id="logoA" accept="image/*">
-            <div class="logo-preview" id="logoPreviewA"></div>
-            <small>Or enter logo path:</small>
-            <input type="text" name="logoPathA" id="logoPathA" placeholder="/images/logos/country.png">
+            <label>Team/Country Logo:</label>
+            
+            <div class="logo-tabs">
+              <div class="logo-tab active" data-target="select-logo-a">
+                <i class="fas fa-images"></i> Select Logo
+              </div>
+              <div class="logo-tab" data-target="upload-logo-a">
+                <i class="fas fa-upload"></i> Upload Logo
+              </div>
+            </div>
+            
+            <div class="logo-content">
+              <div class="logo-panel active" id="select-logo-a">
+                <select name="logoPathA" id="logoPathA" class="logo-select">
+                  <option value="">-- Select a logo --</option>
+                  <% availableLogos.forEach(logo => { %>
+                    <option value="<%= logo %>"><%= logo.split('/').pop() %></option>
+                  <% }) %>
+                </select>
+                
+                <div class="logo-gallery" id="logoGalleryA">
+                  <% if (availableLogos.length === 0) { %>
+                    <div class="empty-gallery">No logos available. Upload one first!</div>
+                  <% } else { %>
+                    <% availableLogos.forEach(logo => { %>
+                      <div class="logo-option" data-path="<%= logo %>">
+                        <img src="<%= logo %>" alt="<%= logo.split('/').pop() %>">
+                        <div class="logo-name"><%= logo.split('/').pop() %></div>
+                      </div>
+                    <% }) %>
+                  <% } %>
+                </div>
+              </div>
+              
+              <div class="logo-panel" id="upload-logo-a">
+                <div class="upload-container">
+                  <div class="file-input-wrapper">
+                    <button type="button" class="browse-button">
+                      <i class="fas fa-file-image"></i> Browse...
+                    </button>
+                    <input type="file" name="logoA" id="logoA" accept="image/*" class="logo-upload" />
+                  </div>
+                  <span class="file-name" id="fileNameA">No file selected</span>
+                </div>
+                
+                <button type="button" id="uploadLogoABtn" class="upload-button" disabled>
+                  <i class="fas fa-cloud-upload-alt"></i> Upload Logo
+                </button>
+                
+                <div class="upload-progress" id="uploadProgressA"></div>
+                <div class="upload-status" id="uploadStatusA"></div>
+              </div>
+            </div>
+            
+            <div class="logo-preview" id="logoPreviewA">
+              <p class="logo-preview-text">No logo selected</p>
+            </div>
+            
+            <div class="logo-actions" id="logoActionsA" style="display: none;">
+              <button type="button" class="logo-action-button rename-button" data-side="A">
+                <i class="fas fa-edit"></i> Rename
+              </button>
+              <button type="button" class="logo-action-button delete-button" data-side="A">
+                <i class="fas fa-trash"></i> Delete
+              </button>
+            </div>
           </div>
         </div>
         
@@ -54,11 +526,72 @@
           </div>
           
           <div class="logo-input">
-            <label for="logoB">Team/Country Logo:</label>
-            <input type="file" name="logoB" id="logoB" accept="image/*">
-            <div class="logo-preview" id="logoPreviewB"></div>
-            <small>Or enter logo path:</small>
-            <input type="text" name="logoPathB" id="logoPathB" placeholder="/images/logos/country.png">
+            <label>Team/Country Logo:</label>
+            
+            <div class="logo-tabs">
+              <div class="logo-tab active" data-target="select-logo-b">
+                <i class="fas fa-images"></i> Select Logo
+              </div>
+              <div class="logo-tab" data-target="upload-logo-b">
+                <i class="fas fa-upload"></i> Upload Logo
+              </div>
+            </div>
+            
+            <div class="logo-content">
+              <div class="logo-panel active" id="select-logo-b">
+                <select name="logoPathB" id="logoPathB" class="logo-select">
+                  <option value="">-- Select a logo --</option>
+                  <% availableLogos.forEach(logo => { %>
+                    <option value="<%= logo %>"><%= logo.split('/').pop() %></option>
+                  <% }) %>
+                </select>
+                
+                <div class="logo-gallery" id="logoGalleryB">
+                  <% if (availableLogos.length === 0) { %>
+                    <div class="empty-gallery">No logos available. Upload one first!</div>
+                  <% } else { %>
+                    <% availableLogos.forEach(logo => { %>
+                      <div class="logo-option" data-path="<%= logo %>">
+                        <img src="<%= logo %>" alt="<%= logo.split('/').pop() %>">
+                        <div class="logo-name"><%= logo.split('/').pop() %></div>
+                      </div>
+                    <% }) %>
+                  <% } %>
+                </div>
+              </div>
+              
+              <div class="logo-panel" id="upload-logo-b">
+                <div class="upload-container">
+                  <div class="file-input-wrapper">
+                    <button type="button" class="browse-button">
+                      <i class="fas fa-file-image"></i> Browse...
+                    </button>
+                    <input type="file" name="logoB" id="logoB" accept="image/*" class="logo-upload" />
+                  </div>
+                  <span class="file-name" id="fileNameB">No file selected</span>
+                </div>
+                
+                <button type="button" id="uploadLogoBBtn" class="upload-button" disabled>
+                  <i class="fas fa-cloud-upload-alt"></i> Upload Logo
+                </button>
+                
+                <div class="upload-progress" id="uploadProgressB"></div>
+                <div class="upload-status" id="uploadStatusB"></div>
+              </div>
+            </div>
+            
+            <div class="logo-preview" id="logoPreviewB">
+              <p class="logo-preview-text">No logo selected</p>
+            </div>
+            
+            <div class="logo-actions" id="logoActionsB" style="display: none;">
+              <button type="button" class="logo-action-button rename-button" data-side="B">
+                <i class="fas fa-edit"></i> Rename
+              </button>
+              <button type="button" class="logo-action-button delete-button" data-side="B">
+                <i class="fas fa-trash"></i> Delete
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -70,7 +603,67 @@
     </form>
   </div>
   
+  <!-- Modal untuk rename logo -->
+  <div class="modal" id="renameModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Rename Logo</h3>
+        <span class="modal-close">&times;</span>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="renameLogoPath" value="">
+        <input type="hidden" id="renameLogoSide" value="">
+        <label for="newLogoName">New Name:</label>
+        <input type="text" id="newLogoName" class="modal-input" placeholder="Enter new name">
+      </div>
+      <div class="modal-footer">
+        <button class="modal-button secondary modal-close-btn">Cancel</button>
+        <button class="modal-button primary" id="confirmRename">Rename</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Modal untuk delete logo -->
+  <div class="modal" id="deleteModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Delete Logo</h3>
+        <span class="modal-close">&times;</span>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="deleteLogoPath" value="">
+        <input type="hidden" id="deleteLogoSide" value="">
+        <p>Are you sure you want to delete this logo?</p>
+        <p>This action cannot be undone.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="modal-button secondary modal-close-btn">Cancel</button>
+        <button class="modal-button danger" id="confirmDelete">Delete</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Modal untuk sukses -->
+  <div class="modal" id="successModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Success</h3>
+        <span class="modal-close">&times;</span>
+      </div>
+      <div class="modal-body" style="text-align: center;">
+        <div class="animated-check">
+          <i class="fas fa-check"></i>
+        </div>
+        <p id="successMessage">Operation completed successfully!</p>
+      </div>
+      <div class="modal-footer">
+        <button class="modal-button primary modal-close-btn">OK</button>
+      </div>
+    </div>
+  </div>
+  
   <script>
+    // Ubah tampilan berdasarkan jenis pertandingan
     document.getElementById('matchType').addEventListener('change', function() {
       const doublesFields = document.querySelectorAll('.doubles-only');
       const isDoubles = this.value === 'double';
@@ -92,34 +685,508 @@
       });
     });
 
-    // Preview uploaded logos
-    function previewLogo(input, previewId) {
-      const preview = document.getElementById(previewId);
-      const file = input.files[0];
-      
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          preview.innerHTML = `<img src="${e.target.result}" alt="Logo Preview" style="max-width: 100px; max-height: 100px;">`;
+    // Tab switching untuk panel logo
+    document.querySelectorAll('.logo-tab').forEach(tab => {
+      tab.addEventListener('click', function() {
+        // Ambil parent (tabs container)
+        const tabsContainer = this.parentElement;
+        // Ambil content container (logo-content)
+        const contentContainer = tabsContainer.nextElementSibling;
+        // Ambil target panel
+        const targetId = this.getAttribute('data-target');
+        const targetPanel = document.getElementById(targetId);
+        
+        // Nonaktifkan semua tab dan panel
+        tabsContainer.querySelectorAll('.logo-tab').forEach(t => t.classList.remove('active'));
+        contentContainer.querySelectorAll('.logo-panel').forEach(p => p.classList.remove('active'));
+        
+        // Aktifkan tab dan panel yang dipilih
+        this.classList.add('active');
+        targetPanel.classList.add('active');
+      });
+    });
+
+    // Tampilkan nama file yang dipilih
+    document.querySelectorAll('.logo-upload').forEach(input => {
+      input.addEventListener('change', function() {
+        const fileName = this.files[0] ? this.files[0].name : 'No file selected';
+        const side = this.id === 'logoA' ? 'A' : 'B';
+        document.getElementById(`fileName${side}`).textContent = fileName;
+        
+        // Enable upload button jika file dipilih
+        document.getElementById(`uploadLogo${side}Btn`).disabled = !this.files[0];
+        
+        // Tampilkan pratinjau
+        if (this.files[0]) {
+          const reader = new FileReader();
+          const previewEl = document.getElementById(`logoPreview${side}`);
+          
+          reader.onload = function(e) {
+            previewEl.innerHTML = `<img src="${e.target.result}" alt="Logo Preview">`;
+          }
+          reader.readAsDataURL(this.files[0]);
         }
-        reader.readAsDataURL(file);
+      });
+    });
+
+    // Fungsi untuk mengupload logo
+    function uploadLogo(fileInput, progressEl, statusEl, previewEl, targetPathInput) {
+      if (!fileInput.files || fileInput.files.length === 0) {
+        statusEl.textContent = 'Pilih file terlebih dahulu';
+        return;
+      }
+      
+      const file = fileInput.files[0];
+      const formData = new FormData();
+      formData.append('logo', file);
+      
+      statusEl.textContent = 'Mengunggah...';
+      
+      // Reset progress
+      progressEl.style.width = '0%';
+      
+      // Ajax request
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', '/admin/upload-logo', true);
+      
+      // Track upload progress
+      xhr.upload.onprogress = function(event) {
+        if (event.lengthComputable) {
+          const percentComplete = (event.loaded / event.total) * 100;
+          progressEl.style.width = percentComplete + '%';
+        }
+      };
+      
+      xhr.onload = function() {
+        if (xhr.status === 200) {
+          try {
+            const response = JSON.parse(xhr.responseText);
+            if (response.success) {
+              statusEl.textContent = 'Berhasil diunggah!';
+              targetPathInput.value = response.logoPath;
+              
+              // Tambahkan logo baru ke galeri
+              addNewLogoToGallery(response.logoPath, targetPathInput.id === 'logoPathA' ? 'A' : 'B');
+              
+              // Tampilkan modal sukses
+              showSuccessModal('Logo berhasil diunggah!');
+              
+              // Tampilkan aksi untuk logo
+              const side = targetPathInput.id === 'logoPathA' ? 'A' : 'B';
+              document.getElementById(`logoActions${side}`).style.display = 'flex';
+            } else {
+              statusEl.textContent = 'Gagal: ' + response.message;
+            }
+          } catch (error) {
+            statusEl.textContent = 'Error parsing response';
+          }
+        } else {
+          statusEl.textContent = 'Error: ' + xhr.status;
+        }
+      };
+      
+      xhr.onerror = function() {
+        statusEl.textContent = 'Gagal mengunggah file';
+      };
+      
+      xhr.send(formData);
+    }
+
+    // Fungsi untuk menambahkan logo baru ke galeri
+    function addNewLogoToGallery(logoPath, side) {
+      const gallery = document.getElementById(`logoGallery${side}`);
+      const logoName = logoPath.split('/').pop();
+      
+      // Hapus pesan "No logos available" jika ada
+      const emptyGallery = gallery.querySelector('.empty-gallery');
+      if (emptyGallery) {
+        emptyGallery.remove();
+      }
+      
+      // Buat elemen logo baru
+      const newLogo = document.createElement('div');
+      newLogo.className = 'logo-option selected';
+      newLogo.setAttribute('data-path', logoPath);
+      newLogo.innerHTML = `
+        <img src="${logoPath}" alt="${logoName}">
+        <div class="logo-name">${logoName}</div>
+      `;
+      
+      // Hapus seleksi sebelumnya
+      gallery.querySelectorAll('.logo-option').forEach(opt => opt.classList.remove('selected'));
+      
+      // Tambahkan ke galeri
+      gallery.prepend(newLogo);
+      
+      // Tambahkan event listener
+      setupLogoOption(newLogo);
+      
+      // Pindah ke tab select logo
+      const selectLogoTab = document.querySelector(`[data-target="select-logo-${side.toLowerCase()}"]`);
+      selectLogoTab.click();
+      
+      // Update selector dropdown
+      const selectEl = document.getElementById(`logoPath${side}`);
+      
+      // Periksa jika opsi untuk logo ini sudah ada
+      let optionExists = false;
+      for (let i = 0; i < selectEl.options.length; i++) {
+        if (selectEl.options[i].value === logoPath) {
+          selectEl.options[i].selected = true;
+          optionExists = true;
+          break;
+        }
+      }
+      
+      // Tambahkan opsi baru jika belum ada
+      if (!optionExists) {
+        const option = document.createElement('option');
+        option.value = logoPath;
+        option.text = logoName;
+        option.selected = true;
+        selectEl.prepend(option);
       }
     }
     
-    document.getElementById('logoA').addEventListener('change', function() {
-      previewLogo(this, 'logoPreviewA');
-      // Clear text field if file is selected
-      document.getElementById('logoPathA').value = '';
+// Fungsi untuk mengatur event listener pada logo option
+    function setupLogoOption(option) {
+      option.addEventListener('click', function() {
+        const path = this.getAttribute('data-path');
+        const gallery = this.parentElement;
+        const side = gallery.id === 'logoGalleryA' ? 'A' : 'B';
+        const selectEl = document.getElementById(`logoPath${side}`);
+        const previewEl = document.getElementById(`logoPreview${side}`);
+        const actionsEl = document.getElementById(`logoActions${side}`);
+        
+        // Hapus seleksi sebelumnya
+        gallery.querySelectorAll('.logo-option').forEach(opt => opt.classList.remove('selected'));
+        
+        // Tandai yang dipilih
+        this.classList.add('selected');
+        
+        // Update select dropdown
+        selectEl.value = path;
+        
+        // Update preview
+        previewEl.innerHTML = `<img src="${path}" alt="Logo Preview">`;
+        
+        // Tampilkan aksi logo kecuali untuk logo default
+        const filename = path.split('/').pop();
+        if (filename === 'default.png') {
+          actionsEl.style.display = 'none';
+        } else {
+          actionsEl.style.display = 'flex';
+        }
+      });
+    }
+    
+    // Inisialisasi opsi logo
+    document.querySelectorAll('.logo-option').forEach(option => {
+      setupLogoOption(option);
     });
     
-    document.getElementById('logoB').addEventListener('change', function() {
-      previewLogo(this, 'logoPreviewB');
-      // Clear text field if file is selected
-      document.getElementById('logoPathB').value = '';
+    // Sync select dropdown dengan galeri
+    document.querySelectorAll('.logo-select').forEach(select => {
+      select.addEventListener('change', function() {
+        const path = this.value;
+        const side = this.id === 'logoPathA' ? 'A' : 'B';
+        const gallery = document.getElementById(`logoGallery${side}`);
+        const preview = document.getElementById(`logoPreview${side}`);
+        const actionsEl = document.getElementById(`logoActions${side}`);
+        
+        // Reset select sebelumnya
+        gallery.querySelectorAll('.logo-option').forEach(opt => opt.classList.remove('selected'));
+        
+        // Pilih item baru jika ada
+        if (path) {
+          const option = gallery.querySelector(`.logo-option[data-path="${path}"]`);
+          if (option) {
+            option.classList.add('selected');
+          }
+          
+          // Tampilkan pratinjau
+          preview.innerHTML = `<img src="${path}" alt="Logo Preview">`;
+          
+          // Tampilkan aksi logo kecuali untuk logo default
+          const filename = path.split('/').pop();
+          if (filename === 'default.png') {
+            actionsEl.style.display = 'none';
+          } else {
+            actionsEl.style.display = 'flex';
+          }
+        } else {
+          preview.innerHTML = `<p class="logo-preview-text">No logo selected</p>`;
+          actionsEl.style.display = 'none';
+        }
+      });
     });
+    
+    // Tombol upload
+    document.getElementById('uploadLogoABtn').addEventListener('click', function() {
+      uploadLogo(
+        document.getElementById('logoA'),
+        document.getElementById('uploadProgressA'),
+        document.getElementById('uploadStatusA'),
+        document.getElementById('logoPreviewA'),
+        document.getElementById('logoPathA')
+      );
+    });
+
+    document.getElementById('uploadLogoBBtn').addEventListener('click', function() {
+      uploadLogo(
+        document.getElementById('logoB'),
+        document.getElementById('uploadProgressB'),
+        document.getElementById('uploadStatusB'),
+        document.getElementById('logoPreviewB'),
+        document.getElementById('logoPathB')
+      );
+    });
+    
+    // Modal functions
+    function openModal(modalId) {
+      document.getElementById(modalId).classList.add('active');
+    }
+    
+    function closeModal(modalId) {
+      document.getElementById(modalId).classList.remove('active');
+    }
+    
+    // Close modals
+    document.querySelectorAll('.modal-close, .modal-close-btn').forEach(button => {
+      button.addEventListener('click', function() {
+        const modal = this.closest('.modal');
+        modal.classList.remove('active');
+      });
+    });
+    
+    // Handle rename button
+    document.querySelectorAll('.rename-button').forEach(button => {
+      button.addEventListener('click', function() {
+        const side = this.getAttribute('data-side');
+        const logoPath = document.getElementById(`logoPath${side}`).value;
+        
+        if (!logoPath) {
+          alert('Please select a logo first');
+          return;
+        }
+        
+        const logoName = logoPath.split('/').pop().replace(/\.[^/.]+$/, ""); // Remove extension
+        
+        document.getElementById('renameLogoPath').value = logoPath;
+        document.getElementById('renameLogoSide').value = side;
+        document.getElementById('newLogoName').value = logoName;
+        
+        openModal('renameModal');
+      });
+    });
+    
+    // Handle delete button
+    document.querySelectorAll('.delete-button').forEach(button => {
+      button.addEventListener('click', function() {
+        const side = this.getAttribute('data-side');
+        const logoPath = document.getElementById(`logoPath${side}`).value;
+        
+        if (!logoPath) {
+          alert('Please select a logo first');
+          return;
+        }
+        
+        document.getElementById('deleteLogoPath').value = logoPath;
+        document.getElementById('deleteLogoSide').value = side;
+        
+        openModal('deleteModal');
+      });
+    });
+    
+    // Confirm rename
+    document.getElementById('confirmRename').addEventListener('click', function() {
+      const logoPath = document.getElementById('renameLogoPath').value;
+      const side = document.getElementById('renameLogoSide').value;
+      const newName = document.getElementById('newLogoName').value;
+      
+      if (!newName) {
+        alert('Please enter a new name');
+        return;
+      }
+      
+      fetch('/admin/rename-logo', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          oldPath: logoPath,
+          newName: newName
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          // Close modal
+          closeModal('renameModal');
+          
+          // Show success
+          showSuccessModal('Logo successfully renamed');
+          
+          // Replace old logo with new logo
+          updateLogoAfterRename(logoPath, data.newPath, side);
+        } else {
+          alert('Error: ' + data.message);
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while renaming the logo');
+      });
+    });
+    
+    // Confirm delete
+    document.getElementById('confirmDelete').addEventListener('click', function() {
+      const logoPath = document.getElementById('deleteLogoPath').value;
+      const side = document.getElementById('deleteLogoSide').value;
+      
+      fetch('/admin/delete-logo', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          logoPath: logoPath
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          // Close modal
+          closeModal('deleteModal');
+          
+          // Show success
+          showSuccessModal('Logo successfully deleted');
+          
+          // Remove logo from gallery
+          removeLogoFromGallery(logoPath);
+          
+          // Clear preview if it was the selected logo
+          const currentPath = document.getElementById(`logoPath${side}`).value;
+          if (currentPath === logoPath) {
+            document.getElementById(`logoPath${side}`).value = '';
+            document.getElementById(`logoPreview${side}`).innerHTML = `<p class="logo-preview-text">No logo selected</p>`;
+            document.getElementById(`logoActions${side}`).style.display = 'none';
+          }
+        } else {
+          alert('Error: ' + data.message);
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while deleting the logo');
+      });
+    });
+    
+    // Function to update logo after rename
+    function updateLogoAfterRename(oldPath, newPath, side) {
+      // Update gallery
+      const allGalleries = document.querySelectorAll('.logo-gallery');
+      
+      allGalleries.forEach(gallery => {
+        const option = gallery.querySelector(`.logo-option[data-path="${oldPath}"]`);
+        if (option) {
+          // Update data attribute
+          option.setAttribute('data-path', newPath);
+          
+          // Update image source
+          const img = option.querySelector('img');
+          img.src = newPath;
+          img.alt = newPath.split('/').pop();
+          
+          // Update name
+          const nameEl = option.querySelector('.logo-name');
+          nameEl.textContent = newPath.split('/').pop();
+        }
+      });
+      
+      // Update dropdowns
+      document.querySelectorAll('.logo-select').forEach(select => {
+        for (let i = 0; i < select.options.length; i++) {
+          if (select.options[i].value === oldPath) {
+            select.options[i].value = newPath;
+            select.options[i].text = newPath.split('/').pop();
+            break;
+          }
+        }
+        
+        // Update selected value if it was the renamed logo
+        if (select.value === oldPath) {
+          select.value = newPath;
+        }
+      });
+      
+      // Update preview if it was the selected logo
+      const currentPath = document.getElementById(`logoPath${side}`).value;
+      if (currentPath === oldPath) {
+        const previewEl = document.getElementById(`logoPreview${side}`);
+        const img = previewEl.querySelector('img');
+        if (img) {
+          img.src = newPath;
+          img.alt = newPath.split('/').pop();
+        }
+      }
+    }
+    
+    // Function to remove logo from gallery
+    function removeLogoFromGallery(logoPath) {
+      // Remove from gallery
+      document.querySelectorAll('.logo-gallery').forEach(gallery => {
+        const option = gallery.querySelector(`.logo-option[data-path="${logoPath}"]`);
+        if (option) {
+          option.remove();
+          
+          // Check if gallery is empty
+          if (gallery.children.length === 0) {
+            gallery.innerHTML = '<div class="empty-gallery">No logos available. Upload one first!</div>';
+          }
+        }
+      });
+      
+      // Remove from dropdowns
+      document.querySelectorAll('.logo-select').forEach(select => {
+        for (let i = 0; i < select.options.length; i++) {
+          if (select.options[i].value === logoPath) {
+            select.remove(i);
+            break;
+          }
+        }
+      });
+    }
+    
+    // Function to show success modal
+    function showSuccessModal(message) {
+      document.getElementById('successMessage').textContent = message;
+      openModal('successModal');
+      
+      // Auto close after 2 seconds
+      setTimeout(() => {
+        closeModal('successModal');
+      }, 2000);
+    }
     
     // Initialize on page load
     document.addEventListener('DOMContentLoaded', function() {
+      const form = document.getElementById('setupForm');
+      if (form) {
+        form.addEventListener('submit', function(e) {
+          // Log data form saat submit
+          console.log('Form submitting...');
+          
+          // Collect all input data
+          const formData = new FormData(this);
+          console.log('Form values:');
+          for (const [key, value] of formData.entries()) {
+            console.log(`${key}: ${value}`);
+          }
+        });
+      }
+      // Trigger match type change
       const matchTypeSelect = document.getElementById('matchType');
       if (matchTypeSelect) {
         matchTypeSelect.dispatchEvent(new Event('change'));
@@ -128,3 +1195,4 @@
   </script>
 </body>
 </html>
+  
